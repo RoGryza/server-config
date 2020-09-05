@@ -24,6 +24,11 @@ provider "hcloud" {
 data "hcloud_locations" "loc" {
 }
 
+data "hcloud_image" "default" {
+  with_selector = "me.rogryza.name==rogryza"
+  most_recent = true
+}
+
 resource "random_password" "admin" {
   length  = 12
   special = false
@@ -61,14 +66,6 @@ data "template_cloudinit_config" "config" {
   part {
     content_type = "text/cloud-config"
     content = yamlencode({
-      package_update : true,
-      package_upgrade : true,
-      packages : [
-        "docker.io",
-        "apt-transport-https",
-        "ca-certificates",
-        "glusterfs-server",
-      ]
       users : [
         {
           name : var.admin_username,
@@ -106,7 +103,7 @@ resource "hcloud_ssh_key" "admin" {
 resource "hcloud_server" "nodes" {
   count       = var.node_count
   name        = "node${count.index}"
-  image       = "ubuntu-20.04"
+  image       = data.hcloud_image.default.id
   server_type = "cx11"
   location    = element(data.hcloud_locations.loc.names, count.index)
   ssh_keys    = [hcloud_ssh_key.admin.id]
@@ -161,8 +158,6 @@ resource "null_resource" "swarm_token" {
 
   provisioner "remote-exec" {
     inline = [
-      "until $(which docker >/dev/null 2>&1); do sleep 1; done",
-      "until $(systemctl is-active docker.socket >/dev/null 2>&1); do sleep 1; done",
       "docker swarm init --listen-addr ${hcloud_server_network.private.0.ip} --advertise-addr ${hcloud_server_network.private.0.ip} >> ~/provision.log 2>&1",
     ]
   }
@@ -187,8 +182,6 @@ resource "null_resource" "swarm_join" {
 
   provisioner "remote-exec" {
     inline = [
-      "until $(which docker >/dev/null 2>&1); do sleep 1; done",
-      "until $(systemctl is-active docker.socket >/dev/null 2>&1); do sleep 1; done",
       "TOKEN=$(ssh -o StrictHostKeyChecking=no -p ${random_integer.ssh_port.result} ${hcloud_server_network.private.0.ip} 'docker swarm join-token -q manager')",
       "docker swarm join --token $TOKEN ${hcloud_server_network.private.0.ip}:2377 >> ~/provision.log 2>&1",
     ]
@@ -229,7 +222,6 @@ resource "null_resource" "setup_gluster" {
       "echo '${hcloud_volume.node_shared_storage[count.index].linux_device} /export xfs defaults 1 2' | sudo tee -a /etc/fstab",
       "sudo mount -a && sudo mount",
       "sudo mkdir -p /export/brick",
-      "until $(which gluster >/dev/null 2>&1); do sleep 1; done",
       "until $(sudo systemctl enable --now glusterd >/dev/null 2>&1); do sleep 1; done",
     ]
   }
