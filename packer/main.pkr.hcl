@@ -30,11 +30,15 @@ build {
     inline = [
       "apt-get update",
       "apt-get upgrade -y",
-      "apt-get install -y docker.io apt-transport-https ca-certificates unattended-upgrades glusterfs-server",
+      "apt-get install -y apt-transport-https ca-certificates unattended-upgrades ntp",
     ]
   }
   provisioner "file" {
     destination = "/etc/apt/apt.conf.d/20auto-upgrades"
     source      = "20auto-upgrades"
+  }
+  provisioner "file" {
+    destination = "/etc/ntp.conf"
+    source      = "ntp.conf"
   }
 }
