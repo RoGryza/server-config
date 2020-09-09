@@ -30,7 +30,7 @@ build {
     inline = [
       "apt-get update",
       "apt-get upgrade -y",
-      "apt-get install -y apt-transport-https ca-certificates unattended-upgrades ntp",
+      "apt-get install -y apt-transport-https docker ca-certificates unattended-upgrades ntp",
     ]
   }
   provisioner "file" {
