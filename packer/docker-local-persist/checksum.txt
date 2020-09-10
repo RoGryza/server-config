@@ -1,0 +1,1 @@
+bdfe36888d9350a7fb067e44ca11bd52b9106cbc793032901c25c4b237ecb3a3  /usr/local/bin/docker-volume-local-persist
