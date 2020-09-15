@@ -39,3 +39,35 @@ resource "hcloud_server_network" "private" {
   server_id = hcloud_server.managers[count.index].id
   subnet_id = hcloud_network_subnet.private.id
 }
+
+resource "null_resource" "etc_hosts" {
+  count = var.manager_count
+  triggers = {
+    ips: join(", ", hcloud_server_network.private.*.ip)
+  }
+
+  connection {
+    host        = hcloud_server.managers[count.index].ipv4_address
+    port        = random_integer.ssh_port.result
+    user        = "terraform"
+    private_key = tls_private_key.terraform.private_key_pem
+  }
+
+  provisioner "file" {
+    destination = "/tmp/etc_hosts"
+    content = join("\n", concat(
+      [
+      "127.0.1.1 ${hcloud_server.managers[count.index].name}",
+      "127.0.0.1 localhost",
+      ],
+      [
+        for i in range(var.manager_count) :
+        "${hcloud_server_network.private[i].ip} ${hcloud_server.managers[i].name}"
+      ]
+    ))
+  }
+
+  provisioner "remote-exec" {
+    inline = ["sudo mv /tmp/etc_hosts /etc/hosts"]
+  }
+}
