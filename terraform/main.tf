@@ -1,4 +1,4 @@
-variable servers_count {
+variable manager_count {
   default = 3
 }
 
@@ -7,7 +7,7 @@ variable admin_username {
 }
 
 output ips {
-  value = { for server in hcloud_server.control_planes : server.name => server.ipv4_address }
+  value = { for server in hcloud_server.managers : server.name => server.ipv4_address }
 }
 
 output ssh_port {
@@ -16,6 +16,7 @@ output ssh_port {
 
 output admin_password {
   value = random_password.admin.result
+  sensitive = true
 }
 
 provider "hcloud" {
@@ -24,13 +25,8 @@ provider "hcloud" {
 data "hcloud_locations" "loc" {
 }
 
-resource "hcloud_ssh_key" "admin" {
-  name       = "default"
-  public_key = file("files/id_rsa.pub")
-}
-
 data "hcloud_image" "default" {
-  with_selector = "me.rogryza.name==rogryza"
+  with_selector = "me.rogryza.name=rogryza"
   most_recent = true
 }
 
@@ -49,22 +45,41 @@ resource "tls_private_key" "terraform" {
   rsa_bits = 2048
 }
 
-resource "hcloud_network" "k3s" {
-  name     = "private"
-  ip_range = "10.0.0.0/8"
+resource "tls_private_key" "node_terraform" {
+  count = var.manager_count
+  algorithm = "RSA"
+  rsa_bits = 2048
 }
 
-resource "hcloud_network_subnet" "k3s_nodes" {
+resource "hcloud_network" "private" {
+  name     = "private"
+  ip_range = "10.0.0.0/24"
+}
+
+resource "hcloud_network_subnet" "private" {
   type         = "server"
-  network_id   = hcloud_network.k3s.id
+  network_id   = hcloud_network.private.id
   network_zone = "eu-central"
-  ip_range     = "10.254.1.0/24"
+  ip_range     = "10.0.0.0/24"
+}
+
+resource "hcloud_ssh_key" "admin" {
+  name       = "admin"
+  public_key = file("files/id_rsa.pub")
 }
 
 data "template_cloudinit_config" "config" {
   part {
     content_type = "text/cloud-config"
     content = yamlencode({
+      package_update : true,
+      package_upgrade : true,
+      packages : [
+        "docker.io",
+        "apt-transport-https",
+        "ca-certificates",
+        "glusterfs-server",
+      ]
       users : [
         {
           name : var.admin_username,
@@ -78,7 +93,10 @@ data "template_cloudinit_config" "config" {
         {
           name : "terraform",
           lock_passwd : false,
-          ssh_authorized_keys : tls_private_key.terraform.public_key_openssh,
+          groups : ["docker"],
+          ssh_authorized_keys : concat([tls_private_key.terraform.public_key_openssh], [
+            for k in tls_private_key.node_terraform : k.public_key_openssh
+          ]),
           sudo : ["ALL=(ALL) NOPASSWD: ALL"],
           shell : "/bin/bash",
         }

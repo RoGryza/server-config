@@ -31,12 +31,17 @@ build {
       "apt-get update",
       "apt-get upgrade -y",
       "apt-get install -y apt-transport-https docker ca-certificates mosh unattended-upgrades ntp",
+      "add-apt-repository -y ppa:gluster/glusterfs-8",
+      "apt-get update",
+      "apt-get install -y glusterfs-server",
+      "systemctl enable glusterd --now",
     ]
   }
   provisioner "file" {
     destination = "/etc/apt/apt.conf.d/20auto-upgrades"
     source      = "20auto-upgrades"
   }
+
   provisioner "file" {
     destination = "/etc/ntp.conf"
     source      = "ntp.conf"

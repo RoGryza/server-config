@@ -5,6 +5,10 @@ HostKey /etc/ssh/ssh_host_rsa_key
 HostKey /etc/ssh/ssh_host_dsa_key
 HostKey /etc/ssh/ssh_host_ecdsa_key
 HostKey /etc/ssh/ssh_host_ed25519_key
+UsePrivilegeSeparation yes
+
+KeyRegenerationInterval 3600
+ServerKeyBits 1024
 
 SyslogFacility AUTH
 LogLevel INFO
@@ -13,9 +17,11 @@ LoginGraceTime 120
 PermitRootLogin no
 StrictModes yes
 
+RSAAuthentication yes
 PubkeyAuthentication yes
 
 IgnoreRhosts yes
+RhostsRSAAuthentication no
 HostbasedAuthentication no
 
 X11Forwarding no
