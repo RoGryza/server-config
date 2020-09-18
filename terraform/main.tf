@@ -2,19 +2,6 @@ variable admin_username {
   default = "rogryza"
 }
 
-output ip {
-  value = hcloud_server.default.ipv4_address
-}
-
-output ssh_port {
-  value = random_integer.ssh_port.result
-}
-
-output admin_password {
-  value = random_password.admin.result
-  sensitive = true
-}
-
 provider "hcloud" {
 }
 
@@ -72,10 +59,20 @@ data "template_cloudinit_config" "config" {
 }
 
 resource "hcloud_server" "default" {
-  name        = "rogryza"
+  name        = "rogryza.me"
   image = data.hcloud_image.default.id
   server_type = "cx11-ceph"
   location    = data.hcloud_locations.loc.names[0]
   ssh_keys    = [hcloud_ssh_key.admin.id]
   user_data   = data.template_cloudinit_config.config.rendered
+}
+
+resource "ansible_host" "default" {
+  inventory_hostname = "rogryza.me"
+  vars = {
+    ansible_user = var.admin_username
+    ansible_host = hcloud_server.default.ipv4_address
+    ansible_port = random_integer.ssh_port.result
+    ansible_sudo_pass = random_password.admin.result
+  }
 }

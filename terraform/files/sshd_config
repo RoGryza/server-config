@@ -34,3 +34,5 @@ ChallengeResponseAuthentication no
 
 AcceptEnv LANG LC_*
 UsePAM yes
+
+Subsystem sftp /usr/libexec/openssh/sftp-server
