@@ -9,11 +9,10 @@ variable "name" {
 }
 
 source "hcloud" "default" {
-  // image_filter {
-  //   most_recent   = true
-  //   with_selector = ["me.rogryza.name==${var.name}"]
-  // }
-  image = "centos-8"
+  image_filter {
+    most_recent   = true
+    with_selector = ["me.rogryza.name==${var.name},me.rogryza.os==centos-8"]
+  }
   location    = "nbg1"
   server_type = "cx11"
   snapshot_labels = {
