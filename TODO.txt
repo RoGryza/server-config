@@ -1,0 +1,10 @@
+* Manage server lifecycle with NixOps
+* Remote state management
+* Logging
+    + Unattended upgrades
+    + Containers/services
+    + Systemd
+    + SSH
+* Alerts
+* Setup vault
+    + SSH
