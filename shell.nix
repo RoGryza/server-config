@@ -1,4 +1,4 @@
-{ pkgs ? import <nixpkgs> {} }:
+{ pkgs ? import ./nix/nixpkgs.nix {} }:
 pkgs.mkShell {
-  buildInputs = [pkgs.nixops];
+  buildInputs = [pkgs.niv pkgs.nixops];
 }
