@@ -1,4 +1,3 @@
-* Manage server lifecycle with NixOps
 * Remote state management
 * Logging
     + Unattended upgrades
