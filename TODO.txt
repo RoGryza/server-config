@@ -1,9 +1,11 @@
 * Remote state management
 * Logging
     + Unattended upgrades
-    + Containers/services
     + Systemd
     + SSH
+    + services
 * Alerts
 * Setup vault
     + SSH
+* Lints + gh actions
+* Tests
