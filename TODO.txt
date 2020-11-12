@@ -7,5 +7,6 @@
 * Alerts
 * Setup vault
     + SSH
+* Backups
 * Lints + gh actions
 * Tests

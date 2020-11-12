@@ -2,11 +2,12 @@
 {
   services.taskserver = {
     enable = true;
-    listenHost = config.deployment.targetHost;
+    listenHost = "0.0.0.0";
     fqdn = "tw.rogryza.me";
     organisations.personal = {
       users = ["rogryza"];
       groups = ["rogryza"];
     };
+    dataDir = "/storage/taskserver";
   };
 }

@@ -29,6 +29,7 @@
     imports = [
       <nixpkgs/nixos/modules/profiles/qemu-guest.nix>
       ./fetchHetznerKeys.nix
+      ./modules/taskserver.nix
     ];
     nix.trustedUsers = [ "rogryza" ];
     services.fetchHetznerKeys.enable = true;
