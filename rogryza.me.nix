@@ -8,7 +8,7 @@
     size = 10;
     location = "hel1";
   };
-  main = { pkgs, resources, ... }: {
+  main = { config, pkgs, resources, ... }: {
     deployment.targetEnv = "hcloud";
     deployment.hcloud = {
       serverType = "cx11";
@@ -17,7 +17,7 @@
       volumes = [
         {
           volume = resources.hcloudVolumes.storage;
-          mountPoint = "/storage";
+          mountPoint = config.my.persistentVolume;
           fileSystem = {
             fsType = "ext4";
             autoFormat = true;
@@ -27,40 +27,29 @@
     };
 
     imports = [
-      <nixpkgs/nixos/modules/profiles/qemu-guest.nix>
-      ./fetchHetznerKeys.nix
-      ./modules/taskserver.nix
+      ./modules/base.nix
+      ./modules/my.nix
+      # ./modules/taskserver.nix
     ];
-    nix.trustedUsers = [ "rogryza" ];
-    services.fetchHetznerKeys.enable = true;
 
-    networking.hostName = "rogryza";
+    my.domain = "rogryza.me";
+    my.admin.user = "rogryza";
+    my.admin.keys = [ ./keys/id_rsa.pub ];
+
+    services.taskserver.organisations.personal = {
+      users = ["rogryza"];
+      groups = ["rogryza"];
+    };
+
+    networking.hostName = "rogryza-me";
     time.timeZone = "Europe/Amsterdam";
 
-    services.openssh.enable = true;
-    services.openssh.openFirewall = true;
-    services.openssh.passwordAuthentication = false;
-    # services.openssh.permitRootLogin = "no"; # TODO disable root login without breaking nixops
-    programs.mosh.enable = true;
-
-    networking.firewall.enable = true;
-
-    users.mutableUsers = false;
-    users.groups.wheel = {};
     # TODO change root to auto-generated keys
     # TODO change root password
     users.users.root.password = password;
     users.users.root.openssh.authorizedKeys.keyFiles = [ ./keys/id_rsa.pub ];
+
     deployment.keys.rogryza-passsword.text = password;
-    users.groups.rogryza = {};
-    users.users.rogryza = {
-      isNormalUser = true;
-      createHome = true;
-      group = "rogryza";
-      extraGroups = [ "wheel" ];
-      shell = pkgs.bash;
-      openssh.authorizedKeys.keyFiles = [ ./keys/id_rsa.pub ];
-      passwordFile = "/run/keys/rogryza-password"; # TODO this isn't working, maybe it's fetching the file from the local machine?
-    };
+    users.users.rogryza.passwordFile = "/run/keys/rogryza-password"; # TODO this isn't working, maybe it's fetching the file from the local machine?
   };
 }

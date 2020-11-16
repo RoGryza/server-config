@@ -3,11 +3,7 @@
   services.taskserver = {
     enable = true;
     listenHost = "0.0.0.0";
-    fqdn = "tw.rogryza.me";
-    organisations.personal = {
-      users = ["rogryza"];
-      groups = ["rogryza"];
-    };
-    dataDir = "/storage/taskserver";
+    fqdn = config.my.domain;
+    dataDir = "${config.my.persistentVolume}/taskserver";
   };
 }
