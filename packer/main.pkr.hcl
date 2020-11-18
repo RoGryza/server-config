@@ -11,15 +11,15 @@ variable "name" {
 source "hcloud" "default" {
   image_filter {
     most_recent   = true
-    with_selector = ["me.rogryza.name==${var.name},me.rogryza.os==centos-8"]
+    with_selector = ["me.rogryza.name==${var.name},me.rogryza.os==ubuntu-20.04"]
   }
   location    = "nbg1"
   server_type = "cx11"
   snapshot_labels = {
     "me.rogryza.name" = var.name
-    "me.rogryza.os" = "centos-8"
+    "me.rogryza.os" = "ubuntu-20.04"
   }
-  snapshot_name = "${var.name}-centos-${md5(file("main.pkr.hcl"))}"
+  snapshot_name = "${var.name}-ubuntu-${md5(file("main.pkr.hcl"))}"
   ssh_username  = "root"
   token         = var.hc_token
 }
@@ -29,9 +29,9 @@ build {
 
   provisioner "shell" {
     inline = [
-      "dnf -y update",
-      "dnf -y install epel-release",
-      "dnf -y install ansible",
+      "apt-get update",
+      "apt-get upgrade -y",
+      "apt-get install -y ansible apt-transport-https docker ca-certificates",
     ]
   }
 

@@ -3,43 +3,32 @@
   gather_facts: yes
   become: yes
   tasks:
-  - name: Install packages
-    dnf:
-        name: "{{ packages }}"
-        state: latest
+  - name: install packages
+    apt:
+      name: "{{ packages }}"
+      state: latest
+      update_cache: yes
     vars:
-        packages:
-        - dnf-automatic
-        - podman
-        - mosh
-        - systemd-timesyncd
-  - name: Configure timesyncd
+      packages:
+      - chrony
+      - mosh
+      - unattended-upgrades
+  - name: configure chrony
     copy:
-        content: |
-            [Time]
-            NTP=0.europe.pool.ntp.org 1.europe.pool.ntp.org 2.europe.pool.ntp.org 3.europe.pool.ntp.org
-            FallbackNTP=0.rhel.pool.ntp.org 1.rhel.pool.ntp.org 2.rhel.pool.ntp.org 3.rhel.pool.ntp.org
-        dest: /etc/systemd/timesyncd.conf
-  - name: Run timesyncd
+      dest: /etc/chrony.conf
+      content: |
+        pool       europe.pool.ntp.org iburst
+        driftfile  /var/lib/chrony/drift
+        makestep   10 3
+        rtcsync
+  - name: run chrony
     systemd:
-        name: systemd-timesyncd.service
-        state: started
-        enabled: true
-  - name: Configure automatic upgrades
+      name: chronyd
+      state: started
+      enabled: true
+  - name: create APT auto-upgrades configuration
     copy:
-        content: |
-            [commands]
-            upgrade_type = security
-            random_sleep = 0
-            download_update = yes
-            apply_updates = yes
-            [emitters]
-            emit_via = motd
-            [base]
-            debuglevel = 1
-        dest: /etc/dnf/automatic.conf
-  - name: Run automatic upgrades
-    service:
-        name: dnf-automatic.timer
-        state: started
-        enabled: true
+      dest: /etc/apt/apt.conf.d/20auto-upgrades
+      content: |
+        APT::Periodic::Update-Package-Lists "1";
+        APT::Periodic::Unattended-Upgrade "1";
