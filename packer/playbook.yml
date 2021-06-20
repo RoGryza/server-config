@@ -20,7 +20,7 @@
     vars:
       packages:
       - chrony
-      - docker
+      - docker.io
       - mosh
       - unattended-upgrades
   - name: configure chrony

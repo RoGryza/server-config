@@ -1,5 +1,5 @@
-variable "admin_username" {
-  default = "rogryza"
+variable "region" {
+  default = "lon1"
 }
 
 output "ssh_port" {
@@ -7,7 +7,7 @@ output "ssh_port" {
 }
 
 output "ip" {
-  value = hcloud_server.default.ipv4_address
+  value = digitalocean_droplet.default.ipv4_address
 }
 
 // TODO this is probably bad practice
@@ -16,15 +16,19 @@ output "admin_password" {
   sensitive = true
 }
 
-provider "hcloud" {
+provider "digitalocean" {
 }
 
-data "hcloud_locations" "loc" {
-}
-
-data "hcloud_image" "default" {
-  with_selector = "me.rogryza.name=rogryza"
-  most_recent   = true
+data "digitalocean_images" "custom" {
+  filter {
+    key      = "name"
+    match_by = "re"
+    values   = ["^rogryza-ubuntu-[a-f0-9]{32}"]
+  }
+  sort {
+    key       = "created"
+    direction = "desc"
+  }
 }
 
 resource "random_password" "admin" {
@@ -37,7 +41,7 @@ resource "random_integer" "ssh_port" {
   max = 65535
 }
 
-resource "hcloud_ssh_key" "admin" {
+resource "digitalocean_ssh_key" "admin" {
   name       = "admin"
   public_key = file("files/id_rsa.pub")
 }
@@ -51,10 +55,11 @@ data "template_cloudinit_config" "config" {
       ssh_pwauth : false,
       users : [
         {
-          name : var.admin_username,
+          name : "rogryza",
           plain_text_passwd : random_password.admin.result,
           lock_passwd : false,
-          ssh_authorized_keys : [hcloud_ssh_key.admin.public_key],
+          ssh_authorized_keys : [digitalocean_ssh_key.admin.public_key],
+          groups : "docker",
           sudo : ["ALL=(ALL) ALL"],
           shell : "/bin/bash",
         }
@@ -72,11 +77,12 @@ data "template_cloudinit_config" "config" {
   }
 }
 
-resource "hcloud_server" "default" {
-  name        = "rogryza.me"
-  image       = data.hcloud_image.default.id
-  server_type = "cpx11"
-  location    = data.hcloud_locations.loc.names[0]
-  ssh_keys    = [hcloud_ssh_key.admin.id]
-  user_data   = data.template_cloudinit_config.config.rendered
+resource "digitalocean_droplet" "default" {
+  name      = "rogryza.me"
+  image     = data.digitalocean_images.custom.images[0].id
+  size      = "s-1vcpu-1gb"
+  region    = "lon1"
+  ssh_keys  = [digitalocean_ssh_key.admin.fingerprint]
+  user_data = data.template_cloudinit_config.config.rendered
+  tags      = ["me_rogryza"]
 }
