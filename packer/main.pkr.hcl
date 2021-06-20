@@ -9,10 +9,7 @@ variable "name" {
 }
 
 source "hcloud" "default" {
-  image_filter {
-    most_recent   = true
-    with_selector = ["me.rogryza.name==${var.name},me.rogryza.os==ubuntu-20.04"]
-  }
+  image = "ubuntu-20.04"
   location    = "nbg1"
   server_type = "cx11"
   snapshot_labels = {
@@ -31,7 +28,8 @@ build {
     inline = [
       "apt-get update",
       "apt-get upgrade -y",
-      "apt-get install -y ansible apt-transport-https docker ca-certificates",
+      // TODO get rid of ansible?
+      "apt-get install -y ansible apt-transport-https ca-certificates curl software-properties-common",
     ]
   }
 
@@ -39,3 +37,5 @@ build {
     playbook_file = "./playbook.yml"
   }
 }
+
+# TODO delete old images

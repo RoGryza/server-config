@@ -1,8 +1,17 @@
+# TODO base firewall config here
 - name: playbook
   hosts: localhost
   gather_facts: yes
   become: yes
   tasks:
+  - name: add docker repo key
+    apt_key:
+      url: https://download.docker.com/linux/ubuntu/gpg
+      state: present
+  - name: add docker registry
+    apt_repository:
+      repo: deb https://download.docker.com/linux/ubuntu bionic stable
+      state: present
   - name: install packages
     apt:
       name: "{{ packages }}"
@@ -11,6 +20,7 @@
     vars:
       packages:
       - chrony
+      - docker
       - mosh
       - unattended-upgrades
   - name: configure chrony
@@ -26,6 +36,7 @@
       name: chronyd
       state: started
       enabled: true
+  # TODO think about safe docker images and other package managers auto-updates as well
   - name: create APT auto-upgrades configuration
     copy:
       dest: /etc/apt/apt.conf.d/20auto-upgrades
