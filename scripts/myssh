@@ -1,0 +1,13 @@
+#!/bin/bash
+
+export LC_ALL=en_US.UTF-8
+
+# TODO fetch host keys with terraform on droplet creation
+PORT="$(cd terraform && terraform output -raw ssh_port)"
+HOST="$(cd terraform && terraform output -raw ip)"
+SSH="ssh -o UserKnownHostsFile=.hosts -p $PORT"
+if [ "$#" -eq 0 ]; then
+  mosh "--ssh=$SSH" "rogryza@$HOST"
+else
+  $SSH "rogryza@$HOST" "$@"
+fi

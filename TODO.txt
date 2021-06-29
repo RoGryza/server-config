@@ -11,4 +11,7 @@
 * Lints + gh actions
 * Tests
   + terraform
-  + Ansible playbooks (molecule)
+* Docker registry
+  + Use non-root containers
+* Make bootstrapping easier
+  + Tunnels (tf.sh) depend on docker/postgres deployment

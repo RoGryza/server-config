@@ -17,7 +17,7 @@ AcceptEnv LC_PAPER LC_NAME LC_ADDRESS LC_TELEPHONE LC_MEASUREMENT
 AcceptEnv LC_IDENTIFICATION LC_ALL LANGUAGE
 AcceptEnv XMODIFIERS
 
-DisableForwarding yes
+DisableForwarding no # TODO using SSH tunneling for docker for now
 GatewayPorts no
 
 KeyRegenerationInterval 3600

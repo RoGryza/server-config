@@ -1,2 +1,2 @@
 .envrc.local
-kubeconfig
+.hosts
