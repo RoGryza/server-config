@@ -1,11 +1,17 @@
 #!/bin/bash
 
+SCRIPT_PATH="$(dirname $(readlink -f $0))"
+ROOT="$(realpath $SCRIPT_PATH/..)"
 export LC_ALL=en_US.UTF-8
 
+HOSTS="$ROOT/.hosts"
 # TODO fetch host keys with terraform on droplet creation
-PORT="$(cd terraform && terraform output -raw ssh_port)"
-HOST="$(cd terraform && terraform output -raw ip)"
-SSH="ssh -o UserKnownHostsFile=.hosts -p $PORT"
+pushd "$ROOT/terraform" >/dev/null
+PORT="$(terraform output -raw ssh_port)"
+HOST="$(terraform output -raw ip)"
+popd >/dev/null
+
+SSH="ssh -o 'UserKnownHostsFile=$HOSTS' -p $PORT"
 if [ "$#" -eq 0 ]; then
   mosh "--ssh=$SSH" "rogryza@$HOST"
 else
