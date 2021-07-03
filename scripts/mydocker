@@ -1,0 +1,35 @@
+#!/bin/bash
+
+set -euo pipefail
+
+SCRIPT_PATH="$(dirname $(readlink -f $0))"
+ROOT="$(realpath $SCRIPT_PATH/..)"
+
+TMP="$(mktemp -d)"
+TUNNEL_PID=
+
+function cleanup() {
+  kill "$TUNNEL_PID" &>/dev/null || true
+  rm -f "$TMP/docker.sock"
+}
+trap cleanup EXIT
+
+# TODO fetch host keys with terraform on droplet creation
+pushd "$ROOT/terraform" >/dev/null
+PORT="$(terraform output -raw ssh_port)"
+HOST="$(terraform output -raw ip)"
+popd >/dev/null
+
+HOSTS="$ROOT/.hosts"
+
+ssh-add -t10m
+ssh -nNT -o "UserKnownHostsFile=$HOSTS" -p "$PORT" \
+  "rogryza@$HOST" -L "$TMP/docker.sock:/var/run/docker.sock" &
+TUNNEL_PID="$!"
+if [ "$?" -ne 0 ]; then
+  echo "Failed to setup tunnel"
+  exit 1
+fi
+
+sleep 10
+DOCKER_HOST="unix:///$TMP/docker.sock" docker "$@"

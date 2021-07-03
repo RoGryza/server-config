@@ -1,0 +1,7 @@
+# TODO use virtualenv? Maybe these should be in packer -.-
+- name: Install python dependencies
+  become: true
+  pip:
+    name:
+    - docker
+    - psycopg2

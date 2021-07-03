@@ -35,7 +35,7 @@ build {
       "apt-get install -y apt-transport-https ca-certificates curl software-properties-common",
       "apt-add-repository ppa:ansible/ansible",
       "apt-get update",
-      "apt-get install -y ansible",
+      "apt-get install -y ansible python-pip3",
     ]
   }
 

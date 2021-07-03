@@ -1,0 +1,8 @@
+- hosts: all
+  tasks:
+  - include_vars: 
+      file: encrypted_vars.yaml
+  - include: tasks/base.yaml
+  - include: tasks/postgres.yaml
+    vars:
+      present: true

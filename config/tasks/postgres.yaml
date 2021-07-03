@@ -1,0 +1,29 @@
+# TODO maybe handle this with pakcer?
+- name: Install postgres client
+  apt:
+    pkg: postgresql-client
+    state: present # Ignore present argument
+- name: Create Postgres network
+  community.docker.docker_network:
+    name: postgres
+    state: "{{ 'present' if present else 'absent' }}"
+- name: Create Postgres volume
+  community.docker.docker_volume:
+    name: postgres
+    state: "{{ 'present' if present else 'absent' }}"
+- name: Create Postgres container
+  community.docker.docker_container:
+    name: postgres
+    image: postgres:13
+    state: "{{ 'started' if present else 'absent' }}"
+    container_default_behavior: compatibility
+    comparisons:
+      "*": strict
+    env:
+      POSTGRES_PASSWORD: "{{ postgres.passwords.root }}"
+    mounts:
+    - source: postgres
+      target: /var/lib/postgresql/data
+    network_mode: postgres
+    purge_networks: yes
+    restart_policy: unless-stopped
