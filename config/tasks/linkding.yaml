@@ -1,0 +1,28 @@
+- name: Create linkding data volume
+  community.docker.docker_volume:
+    name: linkding-data
+    state: "{{ 'present' if present else 'absent' }}"
+- name: Create linkding container
+  community.docker.docker_container:
+    name: linkding
+    image: sissbruecker/linkding
+    state: "{{ 'started' if present else 'absent' }}"
+    container_default_behavior: compatibility
+    comparisons:
+      "*": strict
+    mounts:
+    - source: linkding-data
+      target: /etc/linkding/data
+    labels:
+      traefik.enable: "true"
+      traefik.port: "80"
+      traefik.http.routers.bookmarks.entrypoints: websecure
+      traefik.http.routers.bookmarks.rule: Host(`bookmarks.rogryza.me`)
+      traefik.http.routers.bookmarks.tls: "true"
+      traefik.http.routers.bookmarks.tls.certresolver: lets-encrypt
+    network_mode: web
+    networks:
+    - name: web
+    purge_networks: yes
+    restart_policy: unless-stopped
+# TODO manage admin user here?

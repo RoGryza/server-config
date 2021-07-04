@@ -15,3 +15,6 @@
   - include: tasks/kanboard.yaml
     vars:
       present: true
+  - include: tasks/linkding.yaml
+    vars:
+      present: true
