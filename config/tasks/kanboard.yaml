@@ -1,0 +1,56 @@
+- name: Create Kanboard postgres user
+  # no_log: true
+  community.general.postgresql_user:
+    login_host: "{{ postgres.host }}"
+    login_password: "{{ postgres.passwords.root }}"
+
+    name: kanboard
+    state: "{{ 'present' if present else 'absent' }}"
+    password: "{{ postgres.passwords.kanboard }}"
+- name: Create Kanboard postgres database
+  community.general.postgresql_db:
+    login_host: "{{ postgres.host }}"
+    login_password: "{{ postgres.passwords.root }}"
+
+    name: kanboard
+    state: "{{ 'present' if present else 'absent' }}"
+    owner: kanboard
+- name: Create Kanboard data volume
+  community.docker.docker_volume:
+    name: kanboard-data
+    state: "{{ 'present' if present else 'absent' }}"
+- name: Create Kanboard plugins volume
+  community.docker.docker_volume:
+    name: kanboard-plugins
+    state: "{{ 'present' if present else 'absent' }}"
+- name: Create Kanboard container
+  community.docker.docker_container:
+    name: kanboard
+    image: kanboard/kanboard
+    state: "{{ 'started' if present else 'absent' }}"
+    container_default_behavior: compatibility
+    comparisons:
+      "*": strict
+    env:
+      DATABASE_URL: "postgres://kanboard:{{ postgres.passwords.kanboard }}@postgres/kanboard"
+      # TODO manage plugins with ansible
+      PLUGIN_INSTALLER: "true"
+    mounts:
+    - source: kanboard-data
+      target: /var/www/app/data
+    - source: kanboard-plugins
+      target: /var/www/app/plugins
+    labels:
+      traefik.enable: "true"
+      traefik.port: "80"
+      traefik.http.routers.kb.entrypoints: websecure
+      traefik.http.routers.kb.rule: Host(`kb.rogryza.me`)
+      traefik.http.routers.kb.tls: "true"
+      traefik.http.routers.kb.tls.certresolver: lets-encrypt
+    network_mode: web
+    networks:
+    - name: postgres
+    - name: web
+    purge_networks: yes
+    restart_policy: unless-stopped
+# TODO change admin password and finish installation
