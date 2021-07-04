@@ -12,6 +12,6 @@
 * Tests
   + terraform
 * Docker registry
-  + Use non-root containers
+  + Use non-root containers (move to podman?)
 * Make bootstrapping easier
   + Tunnels (tf.sh) depend on docker/postgres deployment

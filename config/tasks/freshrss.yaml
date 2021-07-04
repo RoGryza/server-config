@@ -1,0 +1,54 @@
+- name: Create FreshRSS postgres user
+  # no_log: true
+  community.general.postgresql_user:
+    login_host: "{{ postgres.host }}"
+    login_password: "{{ postgres.passwords.root }}"
+
+    name: FreshRSS
+    state: "{{ 'present' if present else 'absent' }}"
+    password: "{{ postgres.passwords.freshrss }}"
+- name: Create FreshRSS postgres database
+  community.general.postgresql_db:
+    login_host: "{{ postgres.host }}"
+    login_password: "{{ postgres.passwords.root }}"
+
+    name: FreshRSS
+    state: "{{ 'present' if present else 'absent' }}"
+    owner: FreshRSS
+- name: Create FreshRSS data volume
+  community.docker.docker_volume:
+    name: FreshRSS-data
+    state: "{{ 'present' if present else 'absent' }}"
+- name: Create FreshRSS extensions volume
+  community.docker.docker_volume:
+    name: FreshRSS-extensions
+    state: "{{ 'present' if present else 'absent' }}"
+- name: Create FreshRSS container
+  community.docker.docker_container:
+    name: freshrss
+    image: freshrss/freshrss
+    state: "{{ 'started' if present else 'absent' }}"
+    container_default_behavior: compatibility
+    comparisons:
+      "*": strict
+    env:
+      CRON_MIN: "4,34"
+    mounts:
+    - source: freshrss-data
+      target: /var/www/FreshRSS/data
+    - source: freshrss-extensions
+      target: /var/www/FreshRSS/extensions
+    labels:
+      traefik.enable: "true"
+      traefik.port: "80"
+      traefik.http.routers.rss.entrypoints: websecure
+      traefik.http.routers.rss.rule: Host(`rss.rogryza.me`)
+      traefik.http.routers.rss.tls: "true"
+      traefik.http.routers.rss.tls.certresolver: lets-encrypt
+    network_mode: web
+    networks:
+    - name: postgres
+    - name: web
+    purge_networks: yes
+    restart_policy: unless-stopped
+# TODO configure freshrss with cli

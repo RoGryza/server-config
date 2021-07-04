@@ -1,0 +1,53 @@
+# - name: Create web network
+#   community.docker.docker_network:
+#     name: web
+#     state: "{{ 'present' if present else 'absent' }}"
+# - name: Create traefik volume
+#   community.docker.docker_volume:
+#     name: traefik
+#     state: "{{ 'present' if present else 'absent' }}"
+- name: Create traefik container
+  community.docker.docker_container:
+    name: traefik
+    image: traefik
+    state: "{{ 'started' if present else 'absent' }}"
+    container_default_behavior: compatibility
+    command:
+      # debug
+      # - "--log.level=DEBUG"
+      # - "--certificatesResolvers.lets-encrypt.acme.caServer=https://acme-staging-v02.api.letsencrypt.org/directory"
+      # redirect HTTP to HTTPS
+      - "--entrypoints.web.address=:80"
+      - "--entrypoints.web.http.redirections.entryPoint.to=websecure"
+      - "--entrypoints.web.http.redirections.entryPoint.scheme=https"
+      # HTTPS entrypoint
+      - "--entrypoints.websecure.address=:443"
+      - "--entrypoints.websecure.http.tls.certResolver=lets-encrypt"
+      # Let's Encrypt
+      - "--certificatesResolvers.lets-encrypt.acme.email=rogryza@gmail.com"
+      - "--certificatesResolvers.lets-encrypt.acme.storage=/storage/acme.json"
+      - "--certificatesResolvers.lets-encrypt.acme.tlsChallenge=true"
+      # docker provider
+      - "--providers.docker=true"
+      - "--providers.docker.watch=true"
+      - "--providers.docker.network=web"
+      - "--providers.docker.exposedByDefault=false"
+    comparisons:
+      "*": strict
+    env:
+      POSTGRES_PASSWORD: "{{ postgres.passwords.root }}"
+    mounts:
+    - source: traefik
+      target: /storage
+    - source: /var/run/docker.sock
+      target: /var/run/docker.sock
+      type: bind
+      read_only: true
+    network_mode: web
+    networks:
+    - name: web
+    ports:
+    - 80:80
+    - 443:443
+    purge_networks: yes
+    restart_policy: unless-stopped

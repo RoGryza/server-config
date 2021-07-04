@@ -1,5 +1,6 @@
 # TODO maybe handle this with pakcer?
 - name: Install postgres client
+  become: true
   apt:
     pkg: postgresql-client
     state: present # Ignore present argument
@@ -12,6 +13,7 @@
     name: postgres
     state: "{{ 'present' if present else 'absent' }}"
 - name: Create Postgres container
+  register: postgres_container_result
   community.docker.docker_container:
     name: postgres
     image: postgres:13
@@ -25,5 +27,13 @@
     - source: postgres
       target: /var/lib/postgresql/data
     network_mode: postgres
+    networks:
+    - name: postgres
     purge_networks: yes
     restart_policy: unless-stopped
+- name: Save postgres IP
+  set_fact:
+    postgres: "{{ postgres|combine(new_postgres, recursive=True) }}"
+  vars:
+    new_postgres:
+      host: "{{ postgres_container_result.container.NetworkSettings.Networks.postgres.IPAddress }}"

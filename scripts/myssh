@@ -13,7 +13,7 @@ PORT="$(terraform output -raw ssh_port)"
 HOST="$(terraform output -raw ip)"
 popd >/dev/null
 
-SSH="ssh -o 'UserKnownHostsFile=$HOSTS' -p $PORT"
+SSH="ssh -o UserKnownHostsFile=$HOSTS -p $PORT"
 if [ "$#" -eq 0 ]; then
   mosh "--ssh=$SSH" "rogryza@$HOST"
 else

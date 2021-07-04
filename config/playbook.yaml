@@ -2,7 +2,13 @@
   tasks:
   - include_vars: 
       file: encrypted_vars.yaml
-  - include: tasks/base.yaml
-  - include: tasks/postgres.yaml
+  # - include: tasks/base.yaml
+  - include: tasks/reverse-proxy.yaml
     vars:
       present: true
+  # - include: tasks/postgres.yaml
+  #   vars:
+  #     present: true
+  # - include: tasks/freshrss.yaml
+  #   vars:
+  #     present: true

@@ -4,4 +4,4 @@
   pip:
     name:
     - docker
-    - psycopg2
+    - psycopg2-binary
