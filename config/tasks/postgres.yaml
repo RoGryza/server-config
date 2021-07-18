@@ -1,3 +1,5 @@
+- include_vars: # TODO can't I remove this?
+    file: encrypted_vars.yaml
 # TODO maybe handle this with pakcer?
 - name: Install postgres client
   become: true
@@ -31,6 +33,13 @@
     - name: postgres
     purge_networks: yes
     restart_policy: unless-stopped
+# TODO try to fetch postgres IP when the container task doesn't run
+# - name: Fetch postgres container info
+#   when: postgres_container_result is skipped
+#   tags: always
+#   register: postgres_container_result
+#   community.docker.docker_container_info:
+#     name: postgres
 - name: Save postgres IP
   set_fact:
     postgres: "{{ postgres|combine(new_postgres, recursive=True) }}"

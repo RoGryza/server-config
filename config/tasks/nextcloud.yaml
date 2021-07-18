@@ -1,0 +1,59 @@
+- name: Create nextcloud postgres user
+  no_log: true
+  community.general.postgresql_user:
+    login_host: "{{ postgres.host }}"
+    login_password: "{{ postgres.passwords.root }}"
+
+    name: nextcloud
+    state: "{{ 'present' if present else 'absent' }}"
+    password: "{{ postgres.passwords.nextcloud }}"
+- name: Create nextcloud postgres database
+  community.general.postgresql_db:
+    login_host: "{{ postgres.host }}"
+    login_password: "{{ postgres.passwords.root }}"
+
+    name: nextcloud
+    state: "{{ 'present' if present else 'absent' }}"
+    owner: nextcloud
+- name: Create nextcloud data volume
+  community.docker.docker_volume:
+    name: nextcloud
+    state: "{{ 'present' if present else 'absent' }}"
+- name: Create nextcloud container
+  community.docker.docker_container:
+    name: nextcloud
+    image: nextcloud
+    state: "{{ 'started' if present else 'absent' }}"
+    container_default_behavior: compatibility
+    comparisons:
+      "*": strict
+    env:
+      POSTGRES_DB: nextcloud
+      POSTGRES_USER: nextcloud
+      POSTGRES_PASSWORD: "{{ postgres.passwords.nextcloud }}"
+      POSTGRES_HOST: postgres
+
+      NEXTCLOUD_ADMIN_USER: admin@rogryza.me
+      NEXTCLOUD_ADMIN_PASSWORD: "{{ nextcloud.admin_password }}"
+      NEXTCLOUD_TRUSTED_DOMAINS: cloud.rogryza.me
+
+      APACHE_DISABLE_REWRITE_IP: "1"
+      TRUSTED_PROXIES: "{{ reverse_proxy.ip }}"
+    mounts:
+    - source: nextcloud
+      target: /var/www/html
+    labels:
+      traefik.enable: "true"
+      traefik.port: "80"
+      traefik.http.routers.cloud.entrypoints: websecure
+      traefik.http.routers.cloud.rule: Host(`cloud.rogryza.me`)
+      traefik.http.routers.cloud.tls: "true"
+      traefik.http.routers.cloud.tls.certresolver: lets-encrypt
+    network_mode: web
+    networks:
+    - name: postgres
+    - name: web
+    purge_networks: yes
+    restart_policy: unless-stopped
+
+# TODO manage extensions through ansible

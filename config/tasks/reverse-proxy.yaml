@@ -1,12 +1,13 @@
-# - name: Create web network
-#   community.docker.docker_network:
-#     name: web
-#     state: "{{ 'present' if present else 'absent' }}"
-# - name: Create traefik volume
-#   community.docker.docker_volume:
-#     name: traefik
-#     state: "{{ 'present' if present else 'absent' }}"
+- name: Create web network
+  community.docker.docker_network:
+    name: web
+    state: "{{ 'present' if present else 'absent' }}"
+- name: Create traefik volume
+  community.docker.docker_volume:
+    name: traefik
+    state: "{{ 'present' if present else 'absent' }}"
 - name: Create traefik container
+  register: traefik_container_result
   community.docker.docker_container:
     name: traefik
     image: traefik
@@ -34,8 +35,6 @@
       - "--providers.docker.exposedByDefault=false"
     comparisons:
       "*": strict
-    env:
-      POSTGRES_PASSWORD: "{{ postgres.passwords.root }}"
     mounts:
     - source: traefik
       target: /storage
@@ -51,3 +50,15 @@
     - 443:443
     purge_networks: yes
     restart_policy: unless-stopped
+
+# TODO try to fetch proxy IP when the container task doesn't run
+# - name: Fetch postgres container info
+#   when: postgres_container_result is skipped
+#   tags: always
+#   register: postgres_container_result
+#   community.docker.docker_container_info:
+#     name: postgres
+- name: Save proxy IP
+  set_fact:
+    reverse_proxy:
+      ip: "{{ traefik_container_result.container.NetworkSettings.Networks.web.IPAddress }}"

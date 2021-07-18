@@ -1,5 +1,5 @@
 - name: Create Kanboard postgres user
-  # no_log: true
+  no_log: true
   community.general.postgresql_user:
     login_host: "{{ postgres.host }}"
     login_password: "{{ postgres.passwords.root }}"

@@ -4,17 +4,26 @@
       file: encrypted_vars.yaml
   - include: tasks/base.yaml
   - include: tasks/reverse-proxy.yaml
+    tags: reverse-proxy
     vars:
       present: true
   - include: tasks/postgres.yaml
+    tags: postgres
     vars:
       present: true
   - include: tasks/freshrss.yaml
+    tags: freshrss
     vars:
       present: true
   - include: tasks/kanboard.yaml
+    tags: kanboard
     vars:
       present: true
   - include: tasks/linkding.yaml
+    tags: linkding
+    vars:
+      present: true
+  - include: tasks/nextcloud.yaml
+    tags: nextcloud
     vars:
       present: true
