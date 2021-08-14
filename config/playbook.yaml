@@ -15,12 +15,17 @@
     tags: freshrss
     vars:
       present: true
-  - include: tasks/kanboard.yaml
-    tags: kanboard
-    vars:
-      present: true
   - include: tasks/linkding.yaml
     tags: linkding
+    vars:
+      present: true
+  - include: tasks/planka.yaml
+    tags: planka
+    vars:
+      present: true
+
+  - include: tasks/kanboard.yaml
+    tags: kanboard
     vars:
       present: true
   - include: tasks/nextcloud.yaml

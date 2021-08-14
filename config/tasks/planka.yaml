@@ -1,0 +1,61 @@
+- name: Create planka postgres user
+  no_log: true
+  community.general.postgresql_user:
+    login_host: "{{ postgres.host }}"
+    login_password: "{{ postgres.passwords.root }}"
+
+    name: planka
+    state: "{{ 'present' if present else 'absent' }}"
+    password: "{{ postgres.passwords.planka }}"
+- name: Create planka postgres database
+  community.general.postgresql_db:
+    login_host: "{{ postgres.host }}"
+    login_password: "{{ postgres.passwords.root }}"
+
+    name: planka
+    state: "{{ 'present' if present else 'absent' }}"
+    owner: planka
+- name: Create planka avatars volume
+  community.docker.docker_volume:
+    name: planka-avatars
+    state: "{{ 'present' if present else 'absent' }}"
+- name: Create planka background images volume
+  community.docker.docker_volume:
+    name: planka-background-images
+    state: "{{ 'present' if present else 'absent' }}"
+- name: Create planka attachments volume
+  community.docker.docker_volume:
+    name: planka-attachments
+    state: "{{ 'present' if present else 'absent' }}"
+- name: Create planka container
+  community.docker.docker_container:
+    name: planka
+    image: meltyshev/planka
+    state: "{{ 'started' if present else 'absent' }}"
+    container_default_behavior: compatibility
+    comparisons:
+      "*": strict
+    env:
+      BASE_URL: https://lists.rogryza.me
+      DATABASE_URL: "postgresql://planka:{{ postgres.passwords.planka }}@postgres/planka"
+      SECRET_KEY: "{{ planka.secret_key }}"
+    mounts:
+    - source: planka-avatars
+      target: /app/public/user-avatars
+    - source: planka-background-images
+      target: /app/public/project-background-images
+    - source: planka-attachments
+      target: /app/public/attachments
+    labels:
+      traefik.enable: "true"
+      traefik.port: "1337"
+      traefik.http.routers.lists.entrypoints: websecure
+      traefik.http.routers.lists.rule: Host(`lists.rogryza.me`)
+      traefik.http.routers.lists.tls: "true"
+      traefik.http.routers.lists.tls.certresolver: lets-encrypt
+    network_mode: web
+    networks:
+    - name: postgres
+    - name: web
+    purge_networks: yes
+    restart_policy: unless-stopped
