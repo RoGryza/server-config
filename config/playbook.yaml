@@ -26,4 +26,4 @@
   - include: tasks/tandoor.yaml
     tags: tandoor
     vars:
-      present: false
+      present: true
