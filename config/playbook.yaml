@@ -23,12 +23,3 @@
     tags: planka
     vars:
       present: true
-
-  - include: tasks/kanboard.yaml
-    tags: kanboard
-    vars:
-      present: true
-  - include: tasks/nextcloud.yaml
-    tags: nextcloud
-    vars:
-      present: true
