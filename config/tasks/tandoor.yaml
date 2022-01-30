@@ -38,7 +38,6 @@
     state: directory
     owner: root
     group: root
-    state: absent
 - name: Create tandoor nginx config
   become: true
   copy:
