@@ -5,3 +5,10 @@
     name:
     - docker
     - psycopg2-binary
+# TODO acl setup should definitely be moved to packer
+- name: Install acl
+  become: true
+  package:
+    name: acl
+    state: latest
+  notify: Remount partitions

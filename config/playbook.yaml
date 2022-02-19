@@ -6,6 +6,7 @@
       file: encrypted_vars.yaml
     tags: always
   - include: tasks/base.yaml
+    tags: base
   - include: tasks/backup.yaml
     tags: backup
   - include: tasks/reverse-proxy.yaml
@@ -25,3 +26,9 @@
     become: true
     systemd:
       daemon_reload: true
+  - name: Remount partitions
+    become: true
+    # TODO maybe read fstab for paths to remount
+    ansible.posix.mount:
+      path: /
+      state: remounted

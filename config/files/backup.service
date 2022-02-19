@@ -1,0 +1,42 @@
+[Unit]
+Description=Run restic backup
+
+StartLimitInterval=1h
+StartLimitBurst=30
+
+[Service]
+Type=oneshot
+
+User=restic
+Group=restic
+
+EnvironmentFile=/etc/default/backup
+Environment=RESTIC_PASSWORD_FILE=/etc/restic/repository-password
+Environment=PGPASSFILE=/etc/restic/pgpass
+
+Restart=on-failure
+RestartSec=1min
+
+ExecStartPre=/usr/bin/sh -c '/usr/bin/docker --config noconfig volume ls \
+  --filter=label=me.rogryza.backup \
+  --format "{{ .Mountpoint }}" >> "${RUNTIME_DIRECTORY}/backup_files"'
+ExecStartPre=/usr/bin/pg_dumpall \
+  --file "${RUNTIME_DIRECTORY}/pgdump.sql" \
+  --no-password \
+  --no-role-passwords \
+  --quote-all-identifiers
+ExecStart=/usr/bin/bash -c 'source /etc/restic/repository-secrets && \
+  /usr/bin/restic --verbose backup \
+  --tag automatic \
+  --files-from "${RUNTIME_DIRECTORY}/backup_files" "${RUNTIME_DIRECTORY}/pgdump.sql"'
+ExecStartPost=/usr/bin/bash -c 'source /etc/restic/repository-secrets && \
+  /usr/bin/restic --verbose forget --prune \
+  --keep-daily 7 \
+  --keep-weekly 5 \
+  --keep-monthly 12'
+
+CacheDirectory=restic
+CacheDirectoryMode=700
+Environment="RESTIC_CACHE_DIR=/var/cache/restic"
+RuntimeDirectory=restic
+RuntimeDirectoryMode=700
