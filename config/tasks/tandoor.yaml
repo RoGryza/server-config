@@ -1,7 +1,7 @@
 - name: Create tandoor postgres user
   no_log: true
   community.general.postgresql_user:
-    login_host: "{{ postgres.host }}"
+    login_host: "{{ postgres_host }}"
     login_password: "{{ postgres.passwords.root }}"
 
     name: tandoor
@@ -9,7 +9,7 @@
     password: "{{ postgres.passwords.tandoor }}"
 - name: Create tandoor postgres database
   community.general.postgresql_db:
-    login_host: "{{ postgres.host }}"
+    login_host: "{{ postgres_host }}"
     login_password: "{{ postgres.passwords.root }}"
 
     name: tandoor

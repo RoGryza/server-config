@@ -1,7 +1,10 @@
 - hosts: all
+  vars:
+    postgres_host: postgres
   tasks:
   - include_vars: 
       file: encrypted_vars.yaml
+    tags: always
   - include: tasks/base.yaml
   - include: tasks/reverse-proxy.yaml
     tags: reverse-proxy
