@@ -15,14 +15,14 @@
     name: freshrss
     state: "{{ 'present' if present else 'absent' }}"
     owner: freshrss
-- import_tasks: tasks/common/volume-with-backup.yaml
-  vars:
+- name: Create freshrss data volume
+  community.docker.docker_volume:
     name: freshrss-data
-    present: "{{ present }}"
-- import_tasks: tasks/common/volume-with-backup.yaml
-  vars:
+    state: "{{ 'present' if present else 'absent' }}"
+- name: Create freshrss extensions volume
+  community.docker.docker_volume:
     name: freshrss-extensions
-    present: "{{ present }}"
+    state: "{{ 'present' if present else 'absent' }}"
 - name: Create FreshRSS container
   community.docker.docker_container:
     name: freshrss

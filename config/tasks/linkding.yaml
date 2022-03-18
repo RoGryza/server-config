@@ -1,18 +1,32 @@
-- name: Create linkding data volume
-  community.docker.docker_volume:
-    name: linkding-data
+- name: Create linkding postgres user
+  no_log: true
+  community.general.postgresql_user:
+    login_host: "{{ postgres_host }}"
+    login_password: "{{ postgres.passwords.root }}"
+
+    name: linkding
     state: "{{ 'present' if present else 'absent' }}"
+    password: "{{ postgres.passwords.linkding }}"
+- name: Create linkding postgres database
+  community.general.postgresql_db:
+    login_host: "{{ postgres_host }}"
+    login_password: "{{ postgres.passwords.root }}"
+
+    name: linkding
+    state: "{{ 'present' if present else 'absent' }}"
+    owner: linkding
 - name: Create linkding container
   community.docker.docker_container:
     name: linkding
-    image: sissbruecker/linkding
+    image: rogryza/linkding-postgres:1.8.5
     state: "{{ 'started' if present else 'absent' }}"
     container_default_behavior: compatibility
     comparisons:
       "*": strict
-    mounts:
-    - source: linkding-data
-      target: /etc/linkding/data
+    env:
+      HOST_NAME: bookmarks.rogryza.me
+      DB_PASSWORD: "{{ postgres.passwords.linkding }}"
+      DB_HOST: postgres
     labels:
       traefik.enable: "true"
       traefik.port: "80"
@@ -23,6 +37,7 @@
     network_mode: web
     networks:
     - name: web
+    - name: postgres
     purge_networks: yes
     restart_policy: unless-stopped
 # TODO manage admin user here?
