@@ -1,17 +1,17 @@
 - name: Create web network
   community.docker.docker_network:
     name: web
-    state: "{{ 'present' if present else 'absent' }}"
+    state: present
 - name: Create traefik volume
   community.docker.docker_volume:
     name: traefik
-    state: "{{ 'present' if present else 'absent' }}"
+    state: present
 - name: Create traefik container
   register: traefik_container_result
   community.docker.docker_container:
     name: traefik
     image: traefik
-    state: "{{ 'started' if present else 'absent' }}"
+    state: started
     container_default_behavior: compatibility
     command:
       # debug

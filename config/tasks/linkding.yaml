@@ -5,7 +5,7 @@
     login_password: "{{ postgres.passwords.root }}"
 
     name: linkding
-    state: "{{ 'present' if present else 'absent' }}"
+    state: present
     password: "{{ postgres.passwords.linkding }}"
 - name: Create linkding postgres database
   community.general.postgresql_db:
@@ -13,16 +13,17 @@
     login_password: "{{ postgres.passwords.root }}"
 
     name: linkding
-    state: "{{ 'present' if present else 'absent' }}"
+    state: present
     owner: linkding
 - name: Create linkding container
   community.docker.docker_container:
     name: linkding
     image: rogryza/linkding-postgres:1.8.5
-    state: "{{ 'started' if present else 'absent' }}"
+    state: started
     container_default_behavior: compatibility
     comparisons:
       "*": strict
+      labels: allow_more_present
     env:
       HOST_NAME: bookmarks.rogryza.me
       DB_PASSWORD: "{{ postgres.passwords.linkding }}"

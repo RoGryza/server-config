@@ -5,7 +5,7 @@
     login_password: "{{ postgres.passwords.root }}"
 
     name: freshrss
-    state: "{{ 'present' if present else 'absent' }}"
+    state: present
     password: "{{ postgres.passwords.freshrss }}"
 - name: Create FreshRSS postgres database
   community.general.postgresql_db:
@@ -13,24 +13,29 @@
     login_password: "{{ postgres.passwords.root }}"
 
     name: freshrss
-    state: "{{ 'present' if present else 'absent' }}"
+    state: present
     owner: freshrss
-- name: Create freshrss data volume
+- name: Create freshrss-data volume
   community.docker.docker_volume:
     name: freshrss-data
-    state: "{{ 'present' if present else 'absent' }}"
-- name: Create freshrss extensions volume
+    labels:
+      me.rogryza.backup: "1"
+    state: present
+- name: Create freshrss-extensions volume
   community.docker.docker_volume:
     name: freshrss-extensions
-    state: "{{ 'present' if present else 'absent' }}"
+    labels:
+      me.rogryza.backup: "1"
+    state: present
 - name: Create FreshRSS container
   community.docker.docker_container:
     name: freshrss
     image: freshrss/freshrss
-    state: "{{ 'started' if present else 'absent' }}"
+    state: started
     container_default_behavior: compatibility
     comparisons:
       "*": strict
+      labels: allow_more_present
     env:
       CRON_MIN: "4,34"
     mounts:

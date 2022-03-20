@@ -20,17 +20,17 @@
 - name: Create Postgres network
   community.docker.docker_network:
     name: postgres
-    state: "{{ 'present' if present else 'absent' }}"
+    state: present
 - name: Create Postgres volume
   community.docker.docker_volume:
     name: postgres
-    state: "{{ 'present' if present else 'absent' }}"
+    state: present
 - name: Create Postgres container
   register: postgres_container_result
   community.docker.docker_container:
     name: postgres
     image: postgres:13
-    state: "{{ 'started' if present else 'absent' }}"
+    state: started
     container_default_behavior: compatibility
     comparisons:
       "*": strict
@@ -50,4 +50,4 @@
     path: /etc/hosts
     regexp: "\t{{ postgres_host }}$"
     line: "{{ postgres_container_result.container.NetworkSettings.Networks.postgres.IPAddress }}\t{{ postgres_host }}"
-    state: "{{ 'present' if present else 'absent' }}"
+    state: present

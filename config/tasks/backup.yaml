@@ -1,0 +1,57 @@
+- name: Install restic
+  become: true
+  package:
+    name: restic
+    state: latest
+- name: Create restic group
+  become: true
+  group:
+    name: restic
+    state: present
+- name: Create restic user
+  become: true
+  user:
+    name: restic
+    create_home: no
+    group: restic
+    state: present
+- name: Create /etc/restic
+  become: true
+  file:
+    path: /etc/restic
+    state: directory
+# TODO use systemd credentials instead - not supported in systemd v245
+- name: Write /etc/restic/repository-password
+  no_log: true
+  become: true
+  copy:
+    dest: /etc/restic/repository-password
+    content: "{{ restic.repository_password | quote }}"
+    mode: '0600'
+- name: Create backup service file
+  become: true
+  copy:
+    dest: /etc/systemd/system/backup.service
+    src: files/backup.service
+    mode: '0644'
+  notify: Reload systemd daemons
+- name: Create backup service environment file
+  become: true
+  copy:
+    dest: /etc/default/restic
+    mode: '0644'
+    content: |
+      RESTIC_REPOSITORY=/tmp/test-repo
+
+      PGUSER=postgres
+      PGHOST={{ postgres_host }}
+  notify: Reload systemd daemons
+
+# TODO create an user for db backups
+# TODO use systemd credentials instead - not supported in systemd v245
+- name: Create restic pgpass
+  become: true
+  copy:
+    dest: /etc/restic/pgpass
+    content: "{{ postgres_host }}:*:*:postgres:{{ postgres.passwords.root }}"
+    mode: '0600'

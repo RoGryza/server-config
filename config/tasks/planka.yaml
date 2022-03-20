@@ -5,7 +5,7 @@
     login_password: "{{ postgres.passwords.root }}"
 
     name: planka
-    state: "{{ 'present' if present else 'absent' }}"
+    state: present
     password: "{{ postgres.passwords.planka }}"
 - name: Create planka postgres database
   community.general.postgresql_db:
@@ -13,25 +13,31 @@
     login_password: "{{ postgres.passwords.root }}"
 
     name: planka
-    state: "{{ 'present' if present else 'absent' }}"
+    state: present
     owner: planka
-- name: Create planka avatars volume
+- name: Create planka-avatars volume
   community.docker.docker_volume:
     name: planka-avatars
-    state: "{{ 'present' if present else 'absent' }}"
-- name: Create planka background images volume
+    labels:
+      me.rogryza.backup: "1"
+    state: present
+- name: Create planka-background-images volume
   community.docker.docker_volume:
     name: planka-background-images
-    state: "{{ 'present' if present else 'absent' }}"
-- name: Create planka attachments volume
+    labels:
+      me.rogryza.backup: "1"
+    state: present
+- name: Create planka-attachments volume
   community.docker.docker_volume:
     name: planka-attachments
-    state: "{{ 'present' if present else 'absent' }}"
+    labels:
+      me.rogryza.backup: "1"
+    state: present
 - name: Create planka container
   community.docker.docker_container:
     name: planka
     image: meltyshev/planka
-    state: "{{ 'started' if present else 'absent' }}"
+    state: started
     container_default_behavior: compatibility
     comparisons:
       "*": strict

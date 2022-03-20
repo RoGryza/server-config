@@ -5,7 +5,7 @@
     login_password: "{{ postgres.passwords.root }}"
 
     name: tandoor
-    state: "{{ 'present' if present else 'absent' }}"
+    state: present
     password: "{{ postgres.passwords.tandoor }}"
 - name: Create tandoor postgres database
   community.general.postgresql_db:
@@ -13,23 +13,24 @@
     login_password: "{{ postgres.passwords.root }}"
 
     name: tandoor
-    state: "{{ 'present' if present else 'absent' }}"
+    state: present
     owner: tandoor
 
 - name: Create tandoor network
   community.docker.docker_network:
     name: tandoor
-    state: "{{ 'present' if present else 'absent' }}"
+    state: present
 
 - name: Create tandoor static volume
   community.docker.docker_volume:
     name: tandoor-static
-    state: "{{ 'present' if present else 'absent' }}"
-- name: Create tandoor media volume
+    state: present
+- name: Create tandoor-media volume
   community.docker.docker_volume:
     name: tandoor-media
-    state: "{{ 'present' if present else 'absent' }}"
-
+    labels:
+      me.rogryza.backup: "1"
+    state: present
 
 - name: Create tandoor directory
   become: true
@@ -65,7 +66,7 @@
   community.docker.docker_container:
     name: tandoor
     image: vabene1111/recipes
-    state: "{{ 'started' if present else 'absent' }}"
+    state: started
     container_default_behavior: compatibility
     comparisons:
       "*": strict
@@ -99,10 +100,11 @@
   community.docker.docker_container:
     name: tandoor-frontend
     image: nginx
-    state: "{{ 'started' if present else 'absent' }}"
+    state: started
     container_default_behavior: compatibility
     comparisons:
       "*": strict
+      labels: allow_more_present
     mounts:
     - source: tandoor-static
       target: /static
