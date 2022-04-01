@@ -28,7 +28,7 @@ ExecStartPre=/usr/bin/pg_dumpall \
 ExecStart=/usr/bin/bash -c 'source /etc/restic/repository-secrets && \
   /usr/bin/restic --verbose backup \
   --tag automatic \
-  --files-from "${RUNTIME_DIRECTORY}/backup_files" "${RUNTIME_DIRECTORY}/pgdump.sql"'
+  --files-from "/etc/restic/backup_files" "${RUNTIME_DIRECTORY}/pgdump.sql"'
 ExecStartPost=/usr/bin/bash -c 'source /etc/restic/repository-secrets && \
   /usr/bin/restic --verbose forget --prune \
   --keep-daily 7 \

@@ -14,41 +14,45 @@
     name: restic
     create_home: no
     group: restic
-    groups:
-    - docker
+    groups: []
     state: present
-- name: Allow restic to read /var/lib/docker
+- name: Disallow restic from reading /var/lib/docker
   become: true
   ansible.posix.acl:
     path: /var/lib/docker
     entity: restic
     etype: user
-    permissions: rX
-    state: present
-- name: Allow restic to read docker volumes (default)
+    state: absent
+- name: Disallow restic from reading docker volumes (default)
   become: true
   ansible.posix.acl:
     path: /var/lib/docker/volumes
     entity: restic
     etype: user
-    permissions: rX
     default: yes
-    state: present
+    state: absent
 # TODO check why this is always marked as changed
-- name: Allow restic to read docker volumes (current)
+- name: Disallow restic from reading docker volumes (current)
   become: true
   ansible.posix.acl:
     path: /var/lib/docker/volumes
     entity: restic
     etype: user
-    permissions: rX
     recursive: true
-    state: present
+    state: absent
 - name: Create /etc/restic
   become: true
   file:
     path: /etc/restic
     state: directory
+    owner: restic
+    group: restic
+- name: Ensure /etc/restic/backup_files exists
+  become: true
+  file:
+    path: /etc/restic/backup_files
+    state: touch
+    access_time: preserve
     owner: restic
     group: restic
 # TODO use systemd credentials instead - not supported in systemd v245
@@ -135,9 +139,9 @@
   notify: Reload systemd daemons
 - name: Flush handlers before enabling backup timer
   meta: flush_handlers
-- name: Enable backup.timer
+- name: Disable backup.timer
   become: true
   systemd:
     name: backup.timer
-    enabled: true
+    enabled: false
     state: started
