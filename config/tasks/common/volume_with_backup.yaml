@@ -1,0 +1,29 @@
+- name: Create {{ item }} voume
+  community.docker.docker_volume:
+    name: "{{ item }}"
+    state: present
+  register: docker_volume
+- name: Allow restic to read {{ item }} (default)
+  become: true
+  ansible.posix.acl:
+    path: "{{ docker_volume.volume.Mountpoint }}"
+    entity: restic
+    etype: user
+    permissions: rX
+    default: true
+    state: present
+# TODO check why this is always marked as changed
+- name: Allow restic to read {{ item }} (current)
+  become: true
+  ansible.posix.acl:
+    path: "{{ docker_volume.volume.Mountpoint }}"
+    entity: restic
+    etype: user
+    permissions: rX
+    recursive: true
+    state: present
+- name: Add {{ item }} to /etc/restic/backup_files
+  become: true
+  lineinfile:
+    path: /etc/restic/backup_files
+    line: "{{ docker_volume.volume.Mountpoint }}"

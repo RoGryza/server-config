@@ -15,24 +15,11 @@
     name: planka
     state: present
     owner: planka
-- name: Create planka-avatars volume
-  community.docker.docker_volume:
-    name: planka-avatars
-    labels:
-      me.rogryza.backup: "1"
-    state: present
-- name: Create planka-background-images volume
-  community.docker.docker_volume:
-    name: planka-background-images
-    labels:
-      me.rogryza.backup: "1"
-    state: present
-- name: Create planka-attachments volume
-  community.docker.docker_volume:
-    name: planka-attachments
-    labels:
-      me.rogryza.backup: "1"
-    state: present
+- include_tasks: common/volume_with_backup.yaml
+  loop:
+  - planka-avatars
+  - planka-background-images
+  - planka-attachments
 - name: Create planka container
   community.docker.docker_container:
     name: planka

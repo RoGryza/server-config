@@ -15,18 +15,10 @@
     name: freshrss
     state: present
     owner: freshrss
-- name: Create freshrss-data volume
-  community.docker.docker_volume:
-    name: freshrss-data
-    labels:
-      me.rogryza.backup: "1"
-    state: present
-- name: Create freshrss-extensions volume
-  community.docker.docker_volume:
-    name: freshrss-extensions
-    labels:
-      me.rogryza.backup: "1"
-    state: present
+- include_tasks: common/volume_with_backup.yaml
+  loop:
+  - freshrss-data
+  - freshrss-extensions
 - name: Create FreshRSS container
   community.docker.docker_container:
     name: freshrss

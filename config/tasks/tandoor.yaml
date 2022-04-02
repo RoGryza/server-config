@@ -25,12 +25,9 @@
   community.docker.docker_volume:
     name: tandoor-static
     state: present
-- name: Create tandoor-media volume
-  community.docker.docker_volume:
-    name: tandoor-media
-    labels:
-      me.rogryza.backup: "1"
-    state: present
+- include_tasks: common/volume_with_backup.yaml
+  vars:
+    item: tandoor-media
 
 - name: Create tandoor directory
   become: true

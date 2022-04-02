@@ -17,9 +17,6 @@ Environment=PGPASSFILE=/etc/restic/pgpass
 Restart=on-failure
 RestartSec=1min
 
-ExecStartPre=/usr/bin/sh -c '/usr/bin/docker --config noconfig volume ls \
-  --filter=label=me.rogryza.backup \
-  --format "{{ .Mountpoint }}" >> "${RUNTIME_DIRECTORY}/backup_files"'
 ExecStartPre=/usr/bin/pg_dumpall \
   --file "${RUNTIME_DIRECTORY}/pgdump.sql" \
   --no-password \
