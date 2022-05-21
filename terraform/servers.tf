@@ -47,6 +47,7 @@ data "template_cloudinit_config" "config" {
       ],
       write_files : [{
         path : "/etc/ssh/sshd_config",
+        // TODO change sftp to /usr/lib/ instead
         content : templatefile("files/sshd_config", { port : random_integer.ssh_port.result }),
       }],
       runcmd : [

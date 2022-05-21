@@ -1,64 +1,30 @@
-output "wasabi_server_backup_access_key_id" {
-  value = aws_iam_access_key.wasabi_server_backup.id
+output "b2_server_backup_bucket_name" {
+  value = b2_bucket.b2_server_backup.bucket_name
 }
 
-output "wasabi_server_backup_access_key_secret" {
-  value = aws_iam_access_key.wasabi_server_backup.encrypted_secret
+output "b2_server_backup_access_key_id" {
+  value = b2_application_key.b2_server_backup.application_key_id
 }
 
-resource "aws_iam_user" "wasabi_server_backup" {
-  provider      = aws.wasabi
-  name          = "server_backup"
-  force_destroy = true
+output "b2_server_backup_access_key" {
+  value     = b2_application_key.b2_server_backup.application_key
+  sensitive = true
 }
 
-resource "aws_iam_access_key" "wasabi_server_backup" {
-  provider = aws.wasabi
-  user     = aws_iam_user.wasabi_server_backup.name
-  pgp_key  = file("files/gpg-public-key")
+resource "random_string" "b2_bucket_prefix" {
+  length  = 6
+  special = false
+  upper   = false
 }
 
-# TODO https://github.com/hashicorp/terraform-provider-aws/issues/14775
-data "aws_s3_bucket" "wasabi_server_backup" {
-  provider = aws.wasabi
-  bucket   = "server_backup"
+resource "b2_bucket" "b2_server_backup" {
+  bucket_info = {}
+  bucket_name = "${random_string.b2_bucket_prefix.result}-server-backup"
+  bucket_type = "allPrivate"
 }
 
-resource "aws_s3_bucket_acl" "wasabi_server_backup" {
-  provider = aws.wasabi
-  bucket   = data.aws_s3_bucket.wasabi_server_backup.id
-  acl      = "private"
-}
-
-resource "aws_iam_policy" "wasabi_server_backup" {
-  provider = aws.wasabi
-  name     = "server_backup"
-  policy = jsonencode({
-    "Version" : "2012-10-17"
-    "Statement" : [
-      {
-        Effect : "Allow"
-        Action : [
-          "s3:DeleteObject",
-          "s3:GetObject",
-          "s3:PutObject",
-        ],
-        Resource : "${data.aws_s3_bucket.wasabi_server_backup.arn}/*"
-      },
-      {
-        Effect : "Allow"
-        Action : [
-          "s3:ListBucket",
-          "s3:GetBucketLocation",
-        ]
-        Resource : data.aws_s3_bucket.wasabi_server_backup.arn
-      },
-    ]
-  })
-}
-
-resource "aws_iam_user_policy_attachment" "wasabi_server_backup" {
-  provider   = aws.wasabi
-  user       = aws_iam_user.wasabi_server_backup.name
-  policy_arn = aws_iam_policy.wasabi_server_backup.arn
+resource "b2_application_key" "b2_server_backup" {
+  key_name     = "server-backup"
+  capabilities = ["deleteFiles", "listBuckets", "listFiles", "readBuckets", "readFiles", "shareFiles", "writeFiles"]
+  bucket_id    = b2_bucket.b2_server_backup.id
 }
