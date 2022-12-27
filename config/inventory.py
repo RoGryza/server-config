@@ -1,10 +1,11 @@
-#!/bin/env python
+#!/usr/bin/env python
 import json
+import subprocess
 import sys
 
 # TODO validate outputs format
-with open("../terraform/terraform.tfstate") as f:
-    outputs = json.load(f)['outputs']
+raw_outputs = subprocess.check_output(["terraform", "output", "-json"], cwd="../terraform")
+outputs = json.loads(raw_outputs)
 
 hosts = {
     "hosts": ["rogryza.me"],

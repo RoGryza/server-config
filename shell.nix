@@ -5,7 +5,9 @@
 in
   pythonEnv.env.overrideAttrs (oldAttrs: {
     buildInputs = with pkgs; [
+      mosh
       gnupg
+      restic
       terraform
     ];
 

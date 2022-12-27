@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 export RESTIC_PASSWORD="$(
   cd config && ansible-vault view encrypted_vars.yaml | yq '.restic.repository_password' -r
