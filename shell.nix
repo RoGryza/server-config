@@ -12,6 +12,8 @@ pkgs.mkShell {
       export "CLOUDFLARE_API_TOKEN=$(gpg -qad .secrets/keys/cloudflare.gpg || true)"
       export "B2_APPLICATION_KEY_ID=$(gpg -qad .secrets/keys/backblaze/id.gpg || true)"
       export "B2_APPLICATION_KEY=$(gpg -qad .secrets/keys/backblaze/key.gpg || true)"
+      export "AWS_ACCESS_KEY_ID=$B2_APPLICATION_KEY_ID"
+      export "AWS_SECRET_ACCESS_KEY=$B2_APPLICATION_KEY"
     fi
   '';
 }

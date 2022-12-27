@@ -1,0 +1,2 @@
+provider "b2" {
+}
