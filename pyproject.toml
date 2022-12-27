@@ -10,11 +10,11 @@ python = "^3.9"
 ansible = "^4.2.0"
 
 [tool.poetry.dev-dependencies]
-black = "^21.6b0"
-isort = "^5.9.1"
-mypy = "^0.910"
-docformatter = "^1.4"
-pylint = "^2.8.3"
+# black = "^21.6b0"
+# isort = "^5.9.1"
+# mypy = "^0.910"
+# docformatter = "^1.4"
+# pylint = "^2.8.3"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]
