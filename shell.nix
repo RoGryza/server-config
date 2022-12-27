@@ -1,0 +1,17 @@
+{pkgs ? import <nixpkgs> {}}:
+pkgs.mkShell {
+  buildInputs = with pkgs; [
+    gnupg
+    terraform
+  ];
+
+  shellHook = ''
+    if [ -d .secrets ]; then
+      export "DIGITALOCEAN_API_TOKEN=$(gpg -qad .secrets/keys/digitalocean.gpg || true)"
+      export "DIGITALOCEAN_ACCESS_TOKEN=$DIGITALOCEAN_API_TOKEN"
+      export "CLOUDFLARE_API_TOKEN=$(gpg -qad .secrets/keys/cloudflare.gpg || true)"
+      export "B2_APPLICATION_KEY_ID=$(gpg -qad .secrets/keys/backblaze/id.gpg || true)"
+      export "B2_APPLICATION_KEY=$(gpg -qad .secrets/keys/backblaze/key.gpg || true)"
+    fi
+  '';
+}
