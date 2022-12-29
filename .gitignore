@@ -1,3 +1,5 @@
 .direnv
 .hosts
 .secrets
+.tmp
+result

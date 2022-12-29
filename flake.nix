@@ -17,6 +17,18 @@
         pkgs = nixpkgs.legacyPackages.${system};
       in {
         devShells.default = import ./shell.nix {inherit pkgs;};
+        packages.nixosConfigurations.container = nixpkgs.lib.nixosSystem {
+          inherit system;
+          specialArgs = {inherit pkgs;};
+
+          modules = [
+            ./nixos/modules/server
+            (_: {
+              boot.isContainer = true;
+              networking.hostName = "test";
+            })
+          ];
+        };
       }
     );
 }
